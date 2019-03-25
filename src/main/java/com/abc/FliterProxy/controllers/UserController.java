@@ -52,6 +52,7 @@ public class UserController {
 	
 	@PostMapping("/register")
 	public Response<String> register(@RequestBody User user) {
+		System.out.println(user);
 		 HttpHeaders headers = new HttpHeaders();
 	      headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 	     HttpEntity<User> entity = new HttpEntity<User>(user,headers);
@@ -86,8 +87,11 @@ public class UserController {
 	
 	
 	@PostMapping("/login")
-	public Response<CurrentUser> login(@RequestBody User user){
+	public Response<User> login(@RequestBody User user){
+		System.out.println("dsdasdasdasdsad");
+		System.out.println("this is user name ====================================="+user.getUsername());
 		User u = ud.findByUsername(user.getUsername());
+	
 	if(u==null)
 		return new Response<>(false);
 		if(!u.getPassword().equals(passwordEncoder.encode(user.getPassword()))) {
@@ -133,7 +137,7 @@ public class UserController {
 		
 	//	u.setProfile(res.getPayload()[0]);
 		
-		return new Response<CurrentUser>(true,currentUser) ;
+		return new Response<User>(true,u) ;
 	}
 	
 	
@@ -306,5 +310,77 @@ public class UserController {
 			
 		return res;
 	}
+	
+	
+	
+	@PostMapping("/resetRequest/{name}")
+	public Response<String> requestReset(@PathVariable String name) {
+		 HttpHeaders headers = new HttpHeaders();
+	      headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+	    //  HttpEntity<User> entity = new HttpEntity<User>(user,headers);
+	      var reponse= restTemplate.exchange(
+	    	         "http://localhost:8081/users/resetRequest/"+name, HttpMethod.POST, null, String.class);
+	      
+	 	 if(reponse.getStatusCodeValue()==400) {
+			 return new Response<>(false);
+		 }
+	      String s  = reponse.getBody();
+	      
+	     System.out.println(s);
+	     Response<String> res = null;
+			try {
+				ObjectMapper objectMapper = new ObjectMapper();
+				objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+				res = objectMapper.readValue(s, new TypeReference<Response<String>>() {});
+			} catch (JsonParseException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (JsonMappingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+		return res;
+	}
+	
+	
+	
+	
+	@PutMapping("/reset")
+	public Response<String> resetPwd(@RequestBody User user) {
+		 HttpHeaders headers = new HttpHeaders();
+	      headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+	 HttpEntity<User> entity = new HttpEntity<User>(user,headers);
+	      var reponse= restTemplate.exchange(
+	    	         "http://localhost:8081/users/reset", HttpMethod.PUT, entity, String.class);
+	      
+	 	 if(reponse.getStatusCodeValue()==400) {
+			 return new Response<>(false);
+		 }
+	      String s  = reponse.getBody();
+	      
+	     System.out.println(s);
+	     Response<String> res = null;
+			try {
+				ObjectMapper objectMapper = new ObjectMapper();
+				objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+				res = objectMapper.readValue(s, new TypeReference<Response<String>>() {});
+			} catch (JsonParseException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (JsonMappingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+		return res;
+	}
+
 
 }

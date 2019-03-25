@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.catalina.connector.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
@@ -14,6 +15,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +54,10 @@ public class SubmissionController {
 	  private RestTemplate restTemplate;
 	 
 		@PostMapping
-		public Response<String> submit(@RequestParam("submission") String sub, @RequestParam("file") MultipartFile file){
+	public Response<String> submit(  @RequestParam("submission") String sub, @RequestParam("file") MultipartFile file){
+
+			System.out.println(sub);
+			System.out.println("hererere");
 			 HttpHeaders headers = new HttpHeaders();
 			    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 			 MultiValueMap<String, Object> map= new LinkedMultiValueMap<String, Object>();
@@ -75,6 +80,41 @@ public class SubmissionController {
 					ObjectMapper objectMapper = new ObjectMapper();
 					objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 					res = objectMapper.readValue(s, new TypeReference<Response<String>>() {});
+				} catch (JsonParseException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (JsonMappingException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			return res;
+		}
+		
+		
+		@GetMapping("/assignment/studentSubmissions/{id}")
+		public Response<Submission[]> allByStudentSubmission(@PathVariable int id) throws Exception{
+			
+			HttpHeaders headers = new HttpHeaders();
+		      headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		    //  HttpEntity<User> entity = new HttpEntity<User>(user,headers);
+		      var reponse= restTemplate.exchange(
+		    	         "http://localhost:8082/submissions//assignment/studentSubmissions/"+id, HttpMethod.GET, null, String.class);
+		      
+		 	 if(reponse.getStatusCodeValue()==400) {
+				 return new Response<>(false);
+			 }
+		      String s  = reponse.getBody();
+		      
+		     System.out.println(s);
+		     Response<Submission[]> res = null;
+				try {
+					ObjectMapper objectMapper = new ObjectMapper();
+					objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+					res = objectMapper.readValue(s, new TypeReference<Response<Submission[]>>() {});
 				} catch (JsonParseException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -172,6 +212,7 @@ public class SubmissionController {
 		
 		@PostMapping("/grade")
 		public Response<String> gradeAssignment(@RequestBody Submission sub){
+			System.out.println(sub);
 			 HttpHeaders headers = new HttpHeaders();
 		      headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		     HttpEntity<Submission> entity = new HttpEntity<Submission>(sub,headers);
@@ -284,6 +325,78 @@ public class SubmissionController {
 		
 		
 		
+		@GetMapping
+		public Response<Submission[]> getAllSubmissions(){
+			HttpHeaders headers = new HttpHeaders();
+		      headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		    //  HttpEntity<User> entity = new HttpEntity<User>(user,headers);
+		      var reponse= restTemplate.exchange(
+		    	         "http://localhost:8082/submissions", HttpMethod.GET, null, String.class);
+		     
+		      
+		      String s  = reponse.getBody();
+		      if(s.charAt(11)=='f') {
+					 return new Response<>(false,getMessage(s),null);
+				 }
+		    
+		      
+		   
+		      
+		     Response<Submission[]> res = null;
+				try {
+					ObjectMapper objectMapper = new ObjectMapper();
+					objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+					res = objectMapper.readValue(s, new TypeReference<Response<Submission[]>>() {});
+				} catch (JsonParseException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (JsonMappingException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			return res;
+		}
+		
+		
+		@GetMapping("/fileDeatil/{id}")
+		public Response<UploadFile> submissionfileDetailDownload(@PathVariable int id) throws Exception{
+			HttpHeaders headers = new HttpHeaders();
+		      headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		    //  HttpEntity<User> entity = new HttpEntity<User>(user,headers);
+		      var reponse= restTemplate.exchange(
+		    	         "http://localhost:8082/submissions/fileDeatil/"+id, HttpMethod.GET, null, String.class);
+		     
+		      
+		      String s  = reponse.getBody();
+		      if(s.charAt(11)=='f') {
+					 return new Response<>(false,getMessage(s),null);
+				 }
+		    
+		      
+		   
+		      
+		     Response<UploadFile> res = null;
+				try {
+					ObjectMapper objectMapper = new ObjectMapper();
+					objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+					res = objectMapper.readValue(s, new TypeReference<Response<UploadFile>>() {});
+				} catch (JsonParseException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (JsonMappingException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			return res;
+		}
 		
 		
 		
